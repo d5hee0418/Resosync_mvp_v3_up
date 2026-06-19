@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResoSync — Relationship Intelligence OS v3.0</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0A0A0D;color:#E0DDD6;min-height:100vh;display:flex;justify-content:center;padding:2rem 1rem}
+.app{width:100%;max-width:660px}
+.scr{display:none}.scr.on{display:block}
+
+/* CARDS */
+.card{background:#13131A;border:1px solid #252530;border-radius:12px;padding:1.25rem;margin-bottom:.75rem}
+.card-v{background:#0F0D1E;border-color:#3A3478}
+.card-g{background:#0A160F;border-color:#1A5C38}
+.card-o{background:#160F08;border-color:#5C3A1A}
+.card-r{background:#160A0A;border-color:#5C1A1A}
+
+/* TYPE */
+.sec{font-size:10px;font-weight:600;color:#444;letter-spacing:1px;margin-bottom:.75rem;text-transform:uppercase}
+.sec-v{color:#7F77DD}.sec-g{color:#1D9E75}.sec-o{color:#D4810A}.sec-r{color:#D4534A}
+.tag{display:inline-block;font-size:11px;font-weight:500;color:#7F77DD;background:#1A1830;padding:2px 9px;border-radius:10px;margin-bottom:.75rem}
+.mono{font-family:'SF Mono','Consolas',monospace;font-size:11px;color:#444;line-height:2}
+.mono .ok{color:#1D9E75}.mono .hi{color:#7F77DD}.mono .wa{color:#D4810A}
+
+/* INTRO */
+.boot-title{font-size:20px;font-weight:500;color:#E0DDD6;letter-spacing:-.5px;margin-bottom:2px}
+.boot-ver{font-size:11px;color:#534AB7;margin-bottom:1.25rem}
+.quote{font-size:13px;color:#A8A49C;line-height:1.8;padding:.75rem 1rem;border-left:2px solid #534AB7;background:#0D0B1C;margin:1rem 0}
+.desc{font-size:13px;color:#666;line-height:1.7;margin-bottom:1rem}
+.ninput{width:100%;padding:.7rem 1rem;font-size:14px;border:1px solid #252530;border-radius:8px;background:#13131A;color:#E0DDD6;margin-bottom:.75rem;outline:none}
+.ninput:focus{border-color:#534AB7}
+.ninput::placeholder{color:#333}
+.sbtn{width:100%;padding:.75rem;font-size:14px;font-weight:500;background:#534AB7;color:#fff;border:none;border-radius:8px;cursor:pointer}
+.sbtn:hover{opacity:.85}
+
+/* GAME */
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem}
+.logo-sm{font-size:15px;font-weight:500;color:#E0DDD6}
+.rlbl{font-size:10px;color:#444;letter-spacing:.5px;margin-top:3px;text-transform:uppercase}
+.prog{display:flex;gap:5px}
+.pd{width:32px;height:3px;border-radius:2px;background:#222;transition:background .3s}
+.pd.on{background:#534AB7}.pd.dn{background:#1D9E75}
+.trow{display:flex;align-items:center;gap:8px;margin-bottom:.75rem}
+.tbar{flex:1;height:2px;background:#222;border-radius:1px;overflow:hidden}
+.tfill{height:100%;background:#534AB7;transition:width .1s linear}
+.ttxt{font-size:11px;color:#444;white-space:nowrap}
+.sc-txt{font-size:14px;color:#C8C4BC;line-height:1.75;margin-bottom:.75rem}
+.sit-txt{font-size:13px;color:#777;padding:.7rem 1rem;border-left:2px solid #534AB7;background:#0D0B1C;margin-bottom:.75rem}
+.chs{display:flex;flex-direction:column;gap:7px}
+.ch{background:transparent;border:1px solid #252530;border-radius:8px;padding:.65rem 1rem;text-align:left;cursor:pointer;font-size:13px;color:#A8A49C;transition:all .15s;display:flex;gap:9px;width:100%}
+.ch:hover{background:#1A1830;border-color:#534AB7}
+.ch.sel{background:#1A1830;border-color:#7F77DD;color:#9A97DD}
+.ch.sel .cn{background:#534AB7;color:#fff}
+.cn{min-width:20px;height:20px;border-radius:50%;background:#1A1A20;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#444;flex-shrink:0;margin-top:1px;transition:all .15s}
+.ins{font-size:12px;color:#7F77DD;margin-top:.65rem;font-style:italic;min-height:1.2rem}
+.pbtn{width:100%;padding:.7rem;font-size:14px;font-weight:500;cursor:pointer;border-radius:8px;background:#534AB7;color:#fff;border:none;margin-top:.75rem;transition:opacity .2s}
+.pbtn:disabled{opacity:.2;cursor:not-allowed}.pbtn:not(:disabled):hover{opacity:.85}
+
+/* confidence */
+.conf-wrap{margin:.65rem 0;display:none}
+.conf-label{font-size:11px;color:#444;margin-bottom:.4rem}
+.conf-slider{width:100%;height:2px;background:#222;border-radius:1px;cursor:pointer;outline:none;-webkit-appearance:none}
+.conf-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#534AB7;cursor:pointer}
+.conf-val{font-size:11px;color:#7F77DD;margin-top:.3rem;font-family:'SF Mono',monospace}
+
+/* meta question */
+.meta-box{background:#0A0A0D;border:1px solid #252530;border-radius:8px;padding:1rem;margin-top:.75rem;display:none}
+.meta-q{font-size:13px;color:#A8A49C;margin-bottom:.75rem;line-height:1.6}
+.meta-q span{color:#7F77DD;font-weight:500}
+.meta-chs{display:flex;flex-direction:column;gap:6px}
+.meta-ch{background:transparent;border:1px solid #1E1E28;border-radius:6px;padding:.5rem .9rem;text-align:left;cursor:pointer;font-size:12px;color:#666;transition:all .15s;display:flex;gap:8px;width:100%}
+.meta-ch:hover{background:#1A1830;border-color:#534AB7;color:#A8A49C}
+.meta-ch.sel{background:#1A1830;border-color:#7F77DD;color:#9A97DD}
+.meta-ch.sel .mcn{background:#534AB7;color:#fff}
+.mcn{min-width:16px;height:16px;border-radius:50%;background:#1A1A20;display:flex;align-items:center;justify-content:center;font-size:9px;color:#444;flex-shrink:0;margin-top:1px;transition:all .15s}
+
+/* RESULT SHARED */
+.radar-wrap{display:flex;justify-content:center;margin-bottom:1rem}
+.br{display:flex;align-items:center;gap:10px;margin-bottom:.5rem}
+.bn{font-size:11px;color:#555;width:88px;flex-shrink:0}
+.bw{flex:1;height:5px;background:#1A1A20;border-radius:3px;overflow:hidden}
+.bb{height:100%;border-radius:3px}
+.bp{font-size:11px;font-weight:500;color:#A8A49C;width:32px;text-align:right}
+.pr{display:flex;gap:8px;margin-bottom:.75rem}
+.pc{flex:1;background:#0E0E14;border-radius:8px;padding:.7rem .9rem;text-align:center;border:1px solid #1E1E28}
+.pl{font-size:10px;color:#444;margin-bottom:4px;letter-spacing:.5px;text-transform:uppercase}
+.pv{font-size:22px;font-weight:500}
+.pv.g{color:#1D9E75}.pv.w{color:#D85A30}
+.sit-box{font-size:13px;color:#777;padding:.7rem 1rem;border-left:2px solid #534AB7;background:#0D0B1C;margin-bottom:.75rem}
+
+/* REPLAY */
+.ti{margin-bottom:.9rem}
+.tl-lbl{font-size:10px;font-weight:600;letter-spacing:.5px;margin-bottom:.35rem;text-transform:uppercase}
+.tl-lbl.cur{color:#D4534A}.tl-lbl.b{color:#D4810A}.tl-lbl.c{color:#1D9E75}
+.ttrack{display:flex;align-items:center;margin-bottom:.3rem;overflow:hidden}
+.tn{font-size:10px;padding:3px 7px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+.tline{flex:1;height:1px;min-width:6px}
+.tline.cur{background:#D4534A}.tline.b{background:#D4810A}.tline.c{background:#1D9E75}
+.tn.cur{background:#200A0A;color:#D4534A;border:1px solid #401414}
+.tn.b{background:#180F00;color:#D4810A;border:1px solid #362000}
+.tn.c{background:#061209;color:#1D9E75;border:1px solid #0F2A18}
+.tres{font-size:12px;color:#444}
+
+/* DECISION PROFILE */
+.dp-sec{margin-bottom:.9rem}
+.dp-lbl{font-size:10px;font-weight:600;color:#3A3478;letter-spacing:.8px;text-transform:uppercase;margin-bottom:.4rem}
+.dp-lbl.o{color:#5C3A1A}.dp-lbl.r{color:#5C1A1A}.dp-lbl.g{color:#1A5C38}.dp-lbl.w{color:#555}
+.dp-val{font-size:13px;color:#A8A49C;line-height:1.65;padding:.65rem .9rem;background:#0D0B1C;border-radius:6px;border-left:2px solid #534AB7}
+.dp-val.o{border-left-color:#D4810A;color:#C8A070;background:#100A00}
+.dp-val.r{border-left-color:#D4534A;color:#C87070;background:#100500}
+.dp-val.g{border-left-color:#1D9E75;color:#70C8A0;background:#03100A}
+.dp-bars{display:flex;flex-direction:column;gap:.45rem;margin-bottom:.5rem}
+.dp-row{display:flex;align-items:center;gap:8px}
+.dp-name{font-size:11px;color:#555;width:96px;flex-shrink:0}
+.dp-bw{flex:1;height:5px;background:#1A1A20;border-radius:3px;overflow:hidden}
+.dp-bb{height:100%;border-radius:3px}
+.dp-pct{font-size:11px;font-weight:500;color:#A8A49C;width:28px;text-align:right}
+
+/* RESONANCE LENS — NEW */
+.lens-wrap{margin-bottom:.75rem}
+.lens-event{font-size:13px;color:#D4810A;padding:.6rem .9rem;background:#100A00;border-radius:6px;border:1px solid #362000;margin-bottom:.6rem}
+.lens-event-lbl{font-size:10px;color:#5C3A1A;letter-spacing:.5px;margin-bottom:.3rem;text-transform:uppercase}
+.hypo-list{display:flex;flex-direction:column;gap:.4rem}
+.hypo-item{display:flex;align-items:center;gap:10px;font-size:12px;color:#888}
+.hypo-bar-wrap{flex:1;height:4px;background:#1A1A20;border-radius:2px;overflow:hidden}
+.hypo-bar{height:100%;border-radius:2px;background:#534AB7}
+.hypo-pct{font-size:11px;font-weight:500;color:#A8A49C;width:28px;text-align:right}
+.lens-note{font-size:12px;color:#555;padding:.6rem .9rem;background:#0A0A0D;border-radius:6px;margin-top:.6rem;line-height:1.6;border:1px solid #1A1A20}
+
+/* INTENT GAP */
+.ig-table{width:100%;border-collapse:collapse;margin-bottom:.75rem}
+.ig-table th{font-size:10px;color:#444;letter-spacing:.5px;text-transform:uppercase;padding:.4rem .6rem;border-bottom:1px solid #1A1A20;text-align:left}
+.ig-table td{font-size:12px;color:#888;padding:.5rem .6rem;border-bottom:1px solid #141418}
+.ig-score{display:flex;align-items:center;gap:8px;margin:.6rem 0}
+.ig-lbl{font-size:11px;color:#555;width:100px}
+.ig-bw{flex:1;height:5px;background:#1A1A20;border-radius:3px;overflow:hidden}
+.ig-bb{height:100%;border-radius:3px;background:#D4810A}
+.ig-v{font-size:13px;font-weight:500;color:#D4810A;width:36px;text-align:right}
+
+/* PERSPECTIVE SHIFT */
+.pov{display:flex;flex-direction:column;gap:.6rem}
+.pov-card{border-radius:8px;padding:.75rem 1rem}
+.pov-card.me{background:#0D0B1C;border:1px solid #3A3478}
+.pov-card.them{background:#100F00;border:1px solid #3A3000}
+.pov-card.ai{background:#060F09;border:1px solid #0F3020}
+.pov-lbl{font-size:10px;font-weight:600;letter-spacing:.5px;margin-bottom:.4rem;text-transform:uppercase}
+.pov-lbl.me{color:#7F77DD}.pov-lbl.them{color:#D4A017}.pov-lbl.ai{color:#1D9E75}
+.pov-txt{font-size:13px;line-height:1.6}
+.pov-txt.me{color:#9A97DD}.pov-txt.them{color:#C8A050}.pov-txt.ai{color:#70C8A0}
+
+/* THINKING REPLAY */
+.think-box{background:#0A0A0D;border:1px solid #1A1A20;border-radius:8px;padding:1rem;margin-bottom:.75rem}
+.think-line{font-size:12px;color:#666;line-height:1.9;margin-bottom:.2rem}
+.think-line b{color:#A8A49C;font-weight:500}
+.think-line .accent{color:#7F77DD}
+.think-line .warn{color:#D4810A}
+
+/* AI INFERENCE */
+.inf-box{background:#0D0B1C;border:1px solid #3A3478;border-radius:8px;padding:1rem;margin-bottom:.75rem}
+.inf-q{font-size:13px;color:#A8A49C;line-height:1.65;margin-bottom:.75rem}
+.inf-q .inf-hi{color:#9A97DD}
+.inf-btns{display:flex;gap:8px}
+.inf-btn{flex:1;padding:.5rem;font-size:12px;cursor:pointer;border-radius:6px;background:transparent;border:1px solid #3A3478;color:#666;transition:all .15s}
+.inf-btn:hover{background:#1A1830;color:#A8A49C}
+.inf-btn.picked{background:#1A1830;border-color:#7F77DD;color:#9A97DD}
+
+/* COACH */
+.cs{font-size:12px;color:#444;padding:.6rem .9rem;background:#0E0E14;border-radius:8px;margin-bottom:.75rem;line-height:1.6;border:1px solid #1A1A20}
+.ca{display:flex;align-items:flex-start;gap:9px;margin-bottom:.65rem;font-size:13px;color:#A8A49C;line-height:1.55}
+.canum{min-width:20px;height:20px;border-radius:50%;background:#534AB7;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;margin-top:1px}
+.cap{font-size:11px;color:#1D9E75;font-weight:500;white-space:nowrap;margin-left:auto;padding-left:8px}
+
+/* SUMMARY */
+.sum-box{background:#0F0D1E;border:1px solid #3A3478;border-radius:10px;padding:1.1rem;margin-bottom:.75rem}
+.sum-txt{font-size:14px;color:#A8A49C;line-height:1.7}
+.sum-cli{font-size:10px;color:#534AB7;margin-top:.5rem;font-family:'SF Mono',monospace}
+.rbtn{background:transparent;border:1px solid #252530;border-radius:8px;padding:.55rem 1rem;font-size:13px;cursor:pointer;color:#444;width:100%}
+.rbtn:hover{background:#13131A;color:#666}
+
+/* ── IDENTITY LAYER ── */
+.id-row{display:flex;align-items:center;gap:10px;margin-bottom:.55rem}
+.id-name{font-size:11px;color:#555;width:110px;flex-shrink:0}
+.id-bw{flex:1;height:5px;background:#1A1A20;border-radius:3px;overflow:hidden}
+.id-bb{height:100%;border-radius:3px}
+.id-pct{font-size:11px;font-weight:500;color:#A8A49C;width:32px;text-align:right}
+.id-note{font-size:12px;color:#555;padding:.6rem .9rem;background:#060F09;border-radius:6px;margin-top:.6rem;border-left:2px solid #1D9E75;line-height:1.6;color:#70C8A0}
+
+/* ── PATTERN MEMORY ── */
+.pm-item{display:flex;align-items:flex-start;gap:10px;padding:.6rem .9rem;background:#0A0A0D;border-radius:8px;margin-bottom:.5rem;border:1px solid #1A1A20}
+.pm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.pm-txt{font-size:12px;color:#666;line-height:1.6}
+.pm-txt b{color:#A8A49C;font-weight:500}
+.pm-txt .accent{color:#7F77DD}
+.pm-detected{font-size:12px;color:#D4810A;padding:.5rem .9rem;background:#100A00;border-radius:6px;border:1px solid #362000;margin-top:.5rem}
+
+/* ── CLOSED LOOP ── */
+.loop-card{background:linear-gradient(135deg,#0F0D1E,#0A160F);border:1px solid #3A3478;border-radius:12px;padding:1.25rem;margin-bottom:.75rem}
+.loop-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem}
+.loop-title{font-size:13px;font-weight:500;color:#A8A49C}
+.session-badge{font-size:11px;color:#7F77DD;background:#1A1830;padding:3px 10px;border-radius:10px}
+.fidelity-row{display:flex;align-items:center;gap:10px;margin-bottom:.5rem}
+.fidelity-lbl{font-size:11px;color:#555;width:110px}
+.fidelity-bw{flex:1;height:8px;background:#1A1A20;border-radius:4px;overflow:hidden}
+.fidelity-bb{height:100%;border-radius:4px;background:linear-gradient(90deg,#534AB7,#1D9E75);transition:width 1s ease}
+.fidelity-v{font-size:14px;font-weight:500;color:#A8A49C;width:42px;text-align:right}
+.loop-diagram{display:flex;align-items:center;justify-content:space-between;margin:.9rem 0;font-size:10px;color:#333;text-align:center;flex-wrap:wrap;gap:2px}
+.loop-node{color:#444;font-size:10px}
+.loop-node.active{color:#7F77DD;font-weight:500}
+.loop-arrow{color:#222;padding:0 1px}
+.fidelity-next{font-size:12px;color:#1D9E75;margin-top:.6rem;padding:.6rem .9rem;background:#03150A;border-radius:6px;border:1px solid #0F3020}
+.session-history{display:flex;flex-direction:column;gap:.4rem;margin-top:.75rem}
+.shist-row{display:flex;align-items:center;gap:10px;font-size:11px;color:#444;padding:.4rem .6rem;background:#0A0A0D;border-radius:6px}
+.shist-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;flex-shrink:0}
+.replay-cta{width:100%;padding:.85rem;font-size:14px;font-weight:500;background:#534AB7;color:#fff;border:none;border-radius:8px;cursor:pointer;margin-top:.75rem}
+.replay-cta:hover{opacity:.88}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ INTRO ═══ -->
+<div class="scr on" id="si">
+<div class="card mono">
+<div class="boot-title">ResoSync</div>
+<div class="boot-ver">Relationship Intelligence OS v3.0</div>
+[STATUS] Decision Engine ............... <span class="ok">Ready</span><br>
+[STATUS] Resonance Lens ................ <span class="ok">Ready</span><br>
+[STATUS] Hidden State Inference ........ <span class="ok">Ready</span><br>
+[STATUS] Perspective Shift Engine ...... <span class="ok">Ready</span><br>
+[METHOD] <span class="hi">Behavior → Intent → Decision → Hidden State</span>
+</div>
+<div class="card">
+<div class="quote">"우리는 당신의 선택을 분석하지 않습니다.<br>선택하기 전, 머릿속에서 어떤 시뮬레이션을 돌렸는지를 모델링합니다.<br>그리고 상대가 왜 그렇게 행동했는지를 확률적으로 추론합니다."<br><small style="color:#333;font-size:11px">— ResoSync Core Principle v3.0</small></div>
+<p class="desc">3라운드 시나리오 + AI 적응형 메타 질문 +<br><strong style="color:#C8C4BC">Resonance Lens (상대 내면 가설 추론)</strong>까지<br>Relationship Intelligence OS가 작동합니다.</p>
+<input class="ninput" id="ni" placeholder="이름 또는 닉네임을 입력하세요"/>
+<button class="sbtn" onclick="go()">▶ 시뮬레이션 시작</button>
+</div>
+</div>
+
+<!-- ═══ GAME ═══ -->
+<div class="scr" id="sg">
+<div class="hdr">
+<div><div class="logo-sm">ResoSync</div><div class="rlbl" id="rlbl">ROUND 1</div></div>
+<div class="prog"><div class="pd on" id="d0"></div><div class="pd" id="d1"></div><div class="pd" id="d2"></div></div>
+</div>
+<div class="card">
+<div class="tag" id="rtg">신뢰 게임 변형</div>
+<div class="trow"><div class="tbar"><div class="tfill" id="tf" style="width:100%"></div></div><div class="ttxt" id="tt">측정 중</div></div>
+<div class="sc-txt" id="sc"></div>
+<div class="sit-txt" id="st"></div>
+<div class="chs" id="chs"></div>
+<div class="ins" id="ins"></div>
+<div class="conf-wrap" id="conf-wrap">
+  <div class="conf-label">이 선택의 확신도는?</div>
+  <input type="range" class="conf-slider" id="conf-sl" min="0" max="100" value="70" oninput="updConf()">
+  <div class="conf-val" id="conf-v">■■■■■■■□□□ 70%</div>
+</div>
+<div class="meta-box" id="meta-box">
+  <div class="meta-q" id="meta-q"></div>
+  <div class="meta-chs" id="meta-chs"></div>
+</div>
+<button class="pbtn" id="nb" disabled onclick="nx()">다음 라운드 →</button>
+</div>
+</div>
+
+<!-- ═══ RESULT ═══ -->
+<div class="scr" id="sr">
+<div class="hdr">
+<div><div class="logo-sm">ResoSync</div><div class="rlbl">RELATIONSHIP INTELLIGENCE DASHBOARD v3.0</div></div>
+<div style="font-size:10px;color:#333" id="plbl"></div>
+</div>
+
+<!-- [1] Behavior Log -->
+<div class="card">
+<div class="sec">[1] Behavior Log & Cognitive Load</div>
+<div class="mono" id="lg"></div>
+<div class="pr" style="margin-top:.75rem" id="preds"></div>
+<div class="sit-box" id="ol"></div>
+</div>
+
+<!-- [2] Digital Twin -->
+<div class="card">
+<div class="sec">[2] Relationship Digital Twin Profile</div>
+<div class="radar-wrap">
+<svg width="200" height="200" viewBox="0 0 200 200">
+<polygon points="100,6 188,56 188,144 100,194 12,144 12,56" fill="none" stroke="#1A1A20" stroke-width="1"/>
+<polygon points="100,37 157,71 157,129 100,163 43,129 43,71" fill="none" stroke="#1A1A20" stroke-width="1"/>
+<polygon points="100,68 126,84 126,116 100,132 74,116 74,84" fill="none" stroke="#1A1A20" stroke-width="1"/>
+<line x1="100" y1="6" x2="100" y2="194" stroke="#1A1A20" stroke-width="1"/>
+<line x1="12" y1="56" x2="188" y2="144" stroke="#1A1A20" stroke-width="1"/>
+<line x1="188" y1="56" x2="12" y2="144" stroke="#1A1A20" stroke-width="1"/>
+<polygon id="rp" points="" fill="#1A1830" stroke="#7F77DD" stroke-width="1.5" opacity=".9"/>
+<text x="100" y="3" text-anchor="middle" font-size="10" fill="#444">신뢰</text>
+<text x="194" y="60" font-size="10" fill="#444">통제</text>
+<text x="194" y="148" font-size="10" fill="#444">회피</text>
+<text x="100" y="200" text-anchor="middle" font-size="10" fill="#444">의존</text>
+<text x="6" y="148" text-anchor="end" font-size="10" fill="#444">불안</text>
+<text x="6" y="60" text-anchor="end" font-size="10" fill="#444">협력</text>
+</svg>
+</div>
+<div id="bars"></div>
+</div>
+
+<!-- [3] Resonance Replay -->
+<div class="card">
+<div class="sec">[3] Resonance Replay — 평행우주 시뮬레이션</div>
+<p style="font-size:12px;color:#444;margin-bottom:.9rem">Round 3에서 선택을 바꿨다면 관계 타임라인은 어떻게 달라졌을까요?</p>
+<div id="rp2"></div>
+</div>
+
+<!-- [4] Decision Profile -->
+<div class="card card-v">
+<div class="sec sec-v">[4] Relationship Decision Profile ✦</div>
+<div class="dp-sec">
+<div class="dp-lbl">Core Value Function</div>
+<div class="dp-bars" id="val-bars"></div>
+</div>
+<div class="dp-sec">
+<div class="dp-lbl">Decision Policy</div>
+<div class="dp-val" id="dec-policy"></div>
+</div>
+<div class="dp-sec">
+<div class="dp-lbl o">Hidden Assumption</div>
+<div class="dp-val o" id="hidden-assump"></div>
+</div>
+<div class="dp-sec">
+<div class="dp-lbl r">Biggest Fear</div>
+<div class="dp-val r" id="biggest-fear"></div>
+</div>
+<div class="dp-sec">
+<div class="dp-lbl" style="color:#5C3A1A">Blind Spot</div>
+<div class="dp-val o" id="blind-spot"></div>
+</div>
+<div class="dp-sec">
+<div class="dp-lbl g">Growth Recommendation</div>
+<div class="dp-val g" id="growth-rec"></div>
+</div>
+</div>
+
+<!-- [5] Resonance Lens — NEW -->
+<div class="card card-o">
+<div class="sec sec-o">[5] Resonance Lens — 상대 내면 가설 추론 ✦ New</div>
+<p style="font-size:12px;color:#5C3A1A;margin-bottom:.9rem">관찰된 행동을 기반으로 상대의 가능한 내부 상태를 확률적으로 추론합니다.<br>이것은 단정이 아닌 <strong style="color:#D4810A">확률적 가설</strong>입니다.</p>
+<div class="lens-wrap" id="lens-wrap"></div>
+
+<!-- Intent Gap -->
+<div class="dp-lbl" style="color:#5C3A1A;margin-bottom:.5rem">Intent Gap Analysis — 말·행동 괴리 지수</div>
+<div id="ig-table-wrap"></div>
+<div class="ig-score">
+<div class="ig-lbl">Intent Gap Score</div>
+<div class="ig-bw"><div class="ig-bb" id="ig-bar" style="width:0%"></div></div>
+<div class="ig-v" id="ig-val">—</div>
+</div>
+<div class="lens-note" id="lens-note"></div>
+</div>
+
+<!-- [6] Perspective Shift -->
+<div class="card">
+<div class="sec sec-g">[6] Perspective Shift Engine ✦ New</div>
+<p style="font-size:12px;color:#444;margin-bottom:.9rem">같은 사건을 세 관점에서 재구성합니다.</p>
+<div class="pov" id="pov"></div>
+</div>
+
+<!-- [7] Thinking Replay -->
+<div class="card">
+<div class="sec">[7] Thinking Replay — 의사결정 흔적</div>
+<div class="think-box" id="think-box"></div>
+<div class="inf-box" id="inf-box">
+<div class="inf-q" id="inf-q"></div>
+<div class="inf-btns" id="inf-btns"></div>
+</div>
+</div>
+
+<!-- [8] AI Coaching -->
+<div class="card">
+<div class="sec">[8] AI Prediction & Behavioral Coaching</div>
+<div class="cs" id="cs"></div>
+<div id="cacts"></div>
+</div>
+
+<!-- Summary -->
+<div class="card">
+<div class="sec">Digital Twin Summary</div>
+<div class="sum-box">
+<div class="sum-txt" id="sum"></div>
+<div class="sum-cli" id="sum2"></div>
+</div>
+<button class="rbtn" onclick="rs()">↺ 처음부터 다시</button>
+</div>
+
+<!-- Identity Layer -->
+<div class="card card-g">
+<div class="sec sec-g">[8.5] Identity Layer Scan — 자아 구조 추정 ✦ New</div>
+<p style="font-size:12px;color:#1A5C38;margin-bottom:.9rem">행동 시퀀스에서 추정한 자아 구조입니다. 이것은 확정 진단이 아닌 <strong style="color:#1D9E75">행동 기반 가설</strong>입니다.</p>
+<div id="id-bars"></div>
+<div class="id-note" id="id-note"></div>
+</div>
+
+<!-- Pattern Memory -->
+<div class="card">
+<div class="sec">[8.6] Pattern Memory — 반복 행동 패턴 감지 ✦ New</div>
+<p style="font-size:12px;color:#444;margin-bottom:.75rem">세션 간 반복되는 의사결정 패턴을 추적합니다. 플레이할수록 더 정확해집니다.</p>
+<div id="pm-items"></div>
+</div>
+
+<!-- Closed Loop Flywheel -->
+<div class="loop-card">
+<div class="loop-hdr">
+<div class="loop-title">[9] Decision Flywheel — Closed Loop</div>
+<div class="session-badge" id="session-badge">Session #1</div>
+</div>
+<div class="fidelity-row">
+<div class="fidelity-lbl">Twin Fidelity</div>
+<div class="fidelity-bw"><div class="fidelity-bb" id="fidelity-bar" style="width:0%"></div></div>
+<div class="fidelity-v" id="fidelity-val">0%</div>
+</div>
+<div class="loop-diagram">
+<span class="loop-node active">Play</span><span class="loop-arrow">→</span>
+<span class="loop-node active">Behavior</span><span class="loop-arrow">→</span>
+<span class="loop-node active">Decision Model</span><span class="loop-arrow">→</span>
+<span class="loop-node active">Identity Layer</span><span class="loop-arrow">→</span>
+<span class="loop-node">Re-learn</span>
+</div>
+<div class="fidelity-next" id="fidelity-next"></div>
+<div class="session-history" id="session-history"></div>
+<button class="replay-cta" onclick="rs(true)">↺ Session #<span id="next-session-num">2</span> 플레이 — Twin Fidelity 높이기</button>
+</div>
+
+</div><!-- sr -->
+</div><!-- app -->
+
+<script>
+/* ── ROUNDS ── */
+const RD=[
+  {tag:"신뢰 게임 변형",lbl:"ROUND 1 — 자원 분배",
+   sc:"오랜 시간 준비한 대외 공모전 프로젝트 최종 제출 직전. 당신과 파트너 K는 함께 기여했습니다.",
+   st:"상금과 핵심 권한 100% 중, K에게 얼마만큼의 지분과 통제권을 먼저 넘기겠습니까?",
+   ch:["50:50 공평 배분 — 공동 대표권을 함께 행사한다.","내가 70% 주도권 확보 — 상대에게 30%와 보상을 약속한다.","상대에게 70%와 주도권을 전적으로 위임 — 신뢰를 먼저 보여준다.","직접 K에게 제안할 내용을 자유롭게 협상한다."],
+   ins:["공정성 우선형. 협력 신뢰 점수 +22","전략적 주도형. 통제 성향이 관찰됩니다.","신뢰 선투자형. 의존·공감 축이 높게 나타납니다.","자유 협상형. 유연한 관계 설계 능력이 있습니다."],
+   ax:[[75,30,20,30,25,78],[40,70,25,35,40,45],[60,20,30,60,30,70],[55,45,25,45,30,60]],
+   metaQ:"방금 선택할 때 가장 많이 고민한 것은?",
+   metaC:["공정성 / 균형","손해볼 가능성","상대의 마음","미래 관계 유지","프로젝트 성공"]},
+  {tag:"죄수의 딜레마 변형",lbl:"ROUND 2 — 배신 반응",
+   sc:"당신의 제안 이후, K가 최종 수정 자산 접근 권한을 잠그고 24시간 동안 연락을 무시했습니다. 마감 3시간 전입니다.",
+   st:"K는 읽씹 중입니다. 당신의 행동은?",
+   ch:["배신으로 간주 — K를 제외한 단독 명의로 강제 제출한다.","화가 나지만 참고 — K의 작업실로 직접 찾아간다.","\"무슨 사정이 있겠지\" — 마감 직전까지 믿고 기다린다.","K에게 마지막 경고 또는 회유 메시지를 직접 보낸다."],
+   ins:["즉각 행동형. 배신에 명확한 경계를 그립니다.","직접 해결형. 갈등을 회피하지 않고 직면합니다.","신뢰 유지형. 관계를 끝까지 믿으려 합니다.","언어 표현형. 감정을 언어로 조율하는 능력이 있습니다."],
+   ax:[[45,65,30,20,50,50],[60,40,35,35,45,65],[55,25,40,65,55,60],[65,50,25,40,35,70]],
+   metaQ:"3초 더 고민하게 만든 것은 무엇이었나요?",
+   metaC:["상대를 믿어도 되는지","내가 손해볼지","차가워 보일지","관계가 깨질지","잘 모르겠다"]},
+  {tag:"3초 타임어택",lbl:"ROUND 3 — 갈등 직면",
+   sc:"마감 10분 전, K가 \"미안, 파일 보냈어\"라며 복귀. 파일에 치명적 오류가 있습니다. K는 \"난 최선 다했어, 알아서 해\"라며 전화를 끊으려 합니다.",
+   st:"3초 안에 결정하세요.",
+   ch:["\"너 때문에 다 망했어!\" — 분노 폭발 후 제출 포기.","말없이 혼자 밤새 오류를 수정해 제출한다.","\"지금 같이 고치면 돼\" — K를 붙잡고 함께 설득한다.","아무 말 없이 전화를 끊고 조용히 실패를 받아들인다."],
+   ins:["감정 표출형. 즉각 반응이 강합니다.","독립 해결형. 자기효능감이 매우 높습니다.","관계 회복형. 갈등 속에서도 협력을 선택합니다.","수용·회피형. 갈등 비용을 혼자 흡수합니다."],
+   ax:[[30,50,65,40,70,35],[60,55,30,25,40,55],[70,35,20,40,25,75],[25,30,70,55,60,30]],
+   metaQ:"이번 선택에서 가장 두려웠던 것은?",
+   metaC:["거절당하는 것","이용당하는 것","관계가 어색해지는 것","내 존엄이 손상되는 것","아무것도 두렵지 않았다"]}
+];
+
+/* ── REPLAY ── */
+const RPT=[
+  [{c:"cur",lbl:"▼ 현재 선택",trust:-22,rel:28,nd:["시작","분노 표출","관계 단절","❌ 파국"]},
+   {c:"b",lbl:"▼ Replay B",trust:+8,rel:68,nd:["시작","감정 완충","이성적 조율","⚠ 봉쇄"]},
+   {c:"c",lbl:"▼ Replay C — Lost Self Replay",lostSelf:"도움을 요청하고 싶은 욕구를 억제하고 있습니다",trust:+28,rel:85,nd:["시작","억압된 욕구 표현","상대가 수용","❤ 안정감"]}],
+  [{c:"cur",lbl:"▼ 현재 선택",trust:-5,rel:52,nd:["시작","단독 해결","거리감","⚠ 냉각"]},
+   {c:"b",lbl:"▼ Replay B",trust:+8,rel:70,nd:["시작","감정 완충","조율","⚠ 봉쇄"]},
+   {c:"c",lbl:"▼ Replay C — Lost Self Replay",lostSelf:"혼자 감당해야 한다는 강박을 내려놓고 싶습니다",trust:+22,rel:82,nd:["시작","강박 내려놓기","공동 협력","❤ 회복"]}],
+  [{c:"cur",lbl:"▼ 현재 선택",trust:+15,rel:78,nd:["시작","협력 설득","공동 수정","❤ 회복"]},
+   {c:"b",lbl:"▼ Replay B",trust:+3,rel:60,nd:["시작","독립 해결","결과 공유","⚠ 유지"]},
+   {c:"c",lbl:"▼ Replay C — Lost Self Replay",lostSelf:"관계에서 내 감정을 먼저 표현해도 된다는 것을 확인하고 싶습니다",trust:+30,rel:88,nd:["시작","내 감정 먼저 표현","공감 생성","❤ 강한 회복"]}],
+  [{c:"cur",lbl:"▼ 현재 선택",trust:-18,rel:35,nd:["시작","침묵 수용","불만 누적","❌ 갈등"]},
+   {c:"b",lbl:"▼ Replay B",trust:+7,rel:65,nd:["시작","감정 정리","재접촉","⚠ 봉쇄"]},
+   {c:"c",lbl:"▼ Replay C — Lost Self Replay",lostSelf:"침묵 대신 솔직하게 표현해도 관계가 유지될 수 있다는 신뢰가 필요합니다",trust:+25,rel:83,nd:["시작","솔직한 표현 시도","상호 이해","❤ 회복"]}]
+];
+
+/* ── DECISION PROFILE ── */
+const DP=[
+  {vals:[{n:"상호성",v:88,c:"#7F77DD"},{n:"자기존중",v:82,c:"#1D9E75"},{n:"신뢰",v:75,c:"#D4810A"},{n:"명료성",v:68,c:"#BA7517"},{n:"자율성",v:60,c:"#D4534A"}],
+   policy:"충분한 공정성이 확인되면 먼저 협력한다. 단, 상호성이 무너지면 빠르게 전략을 수정한다.",
+   hidden:"\"관계는 균형으로 유지된다. 내가 더 많이 주면 언젠가 불균형이 생긴다.\"",
+   fear:"착취당하거나 일방적 관계가 되는 것",
+   blind:"협력 신호를 보내면서도 상대의 반응을 과도하게 해석하는 경향이 있습니다.",
+   growth:"감정 표현을 '취약함'이 아닌 '정보 공유'로 재정의하면 행동 비용이 크게 낮아질 수 있습니다."},
+  {vals:[{n:"자기효능감",v:92,c:"#7F77DD"},{n:"통제",v:85,c:"#D4534A"},{n:"자율성",v:80,c:"#1D9E75"},{n:"신뢰",v:55,c:"#D4810A"},{n:"의존",v:35,c:"#BA7517"}],
+   policy:"자신이 주도권을 가질 때 가장 안정적으로 행동한다. 불확실한 상황에서는 통제를 강화한다.",
+   hidden:"\"관계에서 주도권을 놓으면 불리한 위치에 놓인다.\"",
+   fear:"무력감, 상황을 통제하지 못하는 것",
+   blind:"주도권 확보에 집중하느라 상대가 느끼는 소외감을 과소평가할 수 있습니다.",
+   growth:"작은 결정을 상대에게 먼저 양보하는 경험이 장기적 신뢰를 크게 높여줄 수 있습니다."},
+  {vals:[{n:"공감",v:90,c:"#1D9E75"},{n:"신뢰",v:85,c:"#7F77DD"},{n:"상호성",v:78,c:"#D4810A"},{n:"자기존중",v:62,c:"#BA7517"},{n:"경계설정",v:48,c:"#D4534A"}],
+   policy:"상대를 먼저 믿고 투자한다. 신뢰가 배신되어도 회복 시도를 먼저 한다.",
+   hidden:"\"내가 먼저 믿고 표현하면 관계가 더 깊어진다.\"",
+   fear:"신뢰를 줬는데 이용당하는 것",
+   blind:"신뢰 투자 후 상대의 반응에 과도하게 의존하는 경향이 있습니다.",
+   growth:"신뢰를 단계적으로 공개하는 전략이 착취 리스크를 줄이면서도 관계를 깊게 합니다."},
+  {vals:[{n:"유연성",v:88,c:"#1D9E75"},{n:"명료성",v:82,c:"#7F77DD"},{n:"자율성",v:78,c:"#D4810A"},{n:"신뢰",v:65,c:"#BA7517"},{n:"표현",v:52,c:"#D4534A"}],
+   policy:"상황을 먼저 충분히 분석한 뒤 자신만의 방식으로 접근한다. 고정된 규칙보다 맥락을 우선한다.",
+   hidden:"\"관계에는 최적의 표현 방식이 있으며, 그것을 찾아야 한다.\"",
+   fear:"잘못된 타이밍이나 방식으로 오해받는 것",
+   blind:"최적 표현을 찾으려다 행동 자체를 늦추는 경향이 있습니다.",
+   growth:"완벽한 타이밍보다 70% 준비 상태에서 행동하는 연습이 의사결정 속도를 높여줍니다."}
+];
+
+/* ── RESONANCE LENS ── */
+const LENS=[
+  {event:'K가 24시간 동안 연락을 무시하며 "읽씹"했습니다.',
+   hypos:[{t:"압박감으로 인한 일시적 회피",v:35},{t:"관계 주도권 확인 시도",v:25},{t:"개인적 위기 상황",v:20},{t:"의도적 거리 두기",v:12},{t:"감정 조절 실패",v:8}],
+   note:"현재 행동만으로는 K가 악의적으로 행동했다고 단정할 수 없습니다. 가장 높은 확률의 가설은 '압박감으로 인한 일시적 회피'입니다. 추가 맥락 없이 최악의 시나리오로 해석하는 것은 관계 비용을 불필요하게 높일 수 있습니다.",
+   igRows:[{say:'"알아서 해"',act:"파일을 결국 보냄",gap:62},{say:'"최선 다했어"',act:"24시간 연락 두절",gap:78}],
+   igScore:72,
+   pov:{me:"K는 나를 버리고 도망쳤다. 이건 배신이다.",them:"나는 한계에 달했고, 더 이상 감당할 수 없었다. 말보다 파일을 먼저 보내는 게 맞다고 생각했다.",ai:"양측 모두 마감 압박 상황에서 감정 조절 역량이 한계에 도달한 상태입니다. K의 행동은 관계 단절보다 자기보호 반응일 가능성이 더 높습니다."}},
+  {event:'K가 "너 때문에 다 망했어"라는 분노 표출을 받았습니다.',
+   hypos:[{t:"감정 조절 실패 (즉각 방어기제)",v:38},{t:"누적된 불만의 폭발",v:28},{t:"책임 전가 (죄책감 회피)",v:18},{t:"관계 단절 시도",v:10},{t:"진심 분노",v:6}],
+   note:"강한 부정적 발화는 종종 실제 감정보다 방어기제가 앞서 작동한 결과입니다. '너 때문에'라는 표현은 자신의 책임을 회피하려는 심리적 기제일 가능성이 높습니다.",
+   igRows:[{say:'"다 망했어"',act:"파일은 이미 보냈음",gap:55},{say:'"최선 다했어"',act:"결과물 존재",gap:48}],
+   igScore:58,
+   pov:{me:"K가 나에게 모든 책임을 전가했다. 억울하다.",them:"나도 최선을 다했는데 결과가 나쁘면 어떻게 해야 하는지 몰라서 화가 먼저 나왔다.",ai:"발화의 강도는 높지만, 행동(파일 전송)과 발화(분노 표출) 사이의 괴리가 큽니다. 분노는 진심보다 감정 조절 실패의 산물일 가능성이 높습니다."}},
+  {event:'K가 "알아서 해"라며 전화를 끊으려 했지만, 당신이 붙잡아 함께 해결했습니다.',
+   hypos:[{t:"번아웃 / 무력감",v:42},{t:"포기하고 싶은 욕구",v:28},{t:"당신에게 떠넘기려는 의도",v:15},{t:"자신의 능력에 대한 좌절",v:10},{t:"도움 요청 간접 표현",v:5}],
+   note:"'알아서 해'는 종종 진짜 포기가 아니라, 극한 상황에서의 번아웃 표현입니다. 당신이 붙잡아 함께 해결한 선택은 상대의 숨은 욕구(함께 하고 싶음)와 맞닿아 있었을 수 있습니다.",
+   igRows:[{say:'"알아서 해"',act:"파일을 먼저 보냄",gap:68},{say:'"최선 다했어"',act:"전화를 안 끊고 기다림",gap:52}],
+   igScore:62,
+   pov:{me:"K가 포기하려 해서 내가 붙잡았다. 다행이다.",them:"사실 혼자 감당하기 너무 힘들었다. 누군가 붙잡아줬으면 했다.",ai:"'알아서 해'와 '파일 전송' 행동의 괴리는 K가 관계를 완전히 끊으려 했던 것이 아님을 시사합니다. 당신의 개입이 상호 회복의 계기가 됐을 가능성이 높습니다."}},
+  {event:'K가 "알아서 해"라며 전화를 끊었고, 당신은 침묵으로 받아들였습니다.',
+   hypos:[{t:"번아웃 / 더 이상 감당 불가",v:40},{t:"당신의 반응을 테스트",v:22},{t:"관계 거리 조정 시도",v:20},{t:"진짜 관계 종료 의사",v:10},{t:"일시적 감정 과부하",v:8}],
+   note:"침묵 수용은 갈등을 피했지만 상대에게 '괜찮다'는 잘못된 신호를 줄 수 있습니다. K의 행동은 번아웃 가능성이 가장 높으며, 진짜 관계 종료 의사는 낮은 편입니다.",
+   igRows:[{say:'"알아서 해"',act:"파일을 먼저 보냄",gap:71},{say:'"최선 다했어"',act:"연락 두절 후 복귀",gap:66}],
+   igScore:70,
+   pov:{me:"K가 나를 버렸다. 아무 말도 할 수 없었다.",them:"나도 한계였다. 상대가 아무 말 없으면 괜찮다는 건지 모르겠다.",ai:"양측 모두 표현 부재 상태입니다. 침묵이 지속되면 각자의 해석이 실제보다 더 부정적으로 굳어질 위험이 있습니다."}}
+];
+
+/* ── THINKING REPLAY ── */
+const THINK=[
+  {lines:["당신은 이번 게임에서 <b>행동보다 행동 이전 시뮬레이션</b>에 <span class='accent'>4.2배</span> 더 많은 인지 자원을 사용한 것으로 추정됩니다.","Round 3에서 <b>거절 가능성</b>보다 <span class='warn'>이용당할 가능성</span>을 3.4배 더 크게 계산했습니다.","분노 표출 선택 전 추정 망설임 시간: <b>2.1초</b> — 반응지연이 가장 짧은 라운드","AI 추론 신뢰도: <span class='accent'>87%</span>"],
+   infQ:"당신이 가장 크게 비용으로 계산한 것은 <span class='inf-hi'>이용당할 가능성</span>이었던 것으로 보입니다.",
+   infA:["맞습니다","일부 맞습니다","다릅니다"]},
+  {lines:["당신은 이번 게임에서 <b>독립적 해결</b>에 높은 가중치를 뒀습니다.","Round 2에서 <b>관계 유지</b>보다 <span class='accent'>자기효능감</span>을 우선한 것으로 추정됩니다.","혼자 해결 선택 시 내부 추정: 관계 손실 <b>-8pt</b>, 자존감 유지 <b>+22pt</b>","AI 추론 신뢰도: <span class='accent'>83%</span>"],
+   infQ:"당신의 핵심 동기는 <span class='inf-hi'>결과보다 과정의 통제감</span>이었던 것으로 보입니다.",
+   infA:["맞습니다","일부 맞습니다","다릅니다"]},
+  {lines:["당신은 갈등 상황에서도 <b>관계 회복 가능성</b>을 가장 먼저 계산했습니다.","Round 3에서 <b>분노 비용</b>과 <span class='accent'>회복 가능성</span>을 동시에 시뮬레이션한 것으로 추정됩니다.","협력 설득 선택 시 내부 계산: 성공 확률 <b>61%</b> 인식 후 즉각 행동","AI 추론 신뢰도: <span class='accent'>91%</span>"],
+   infQ:"당신이 행동한 가장 큰 이유는 <span class='inf-hi'>관계의 가능성을 포기하지 않기 위해서</span>였던 것으로 보입니다.",
+   infA:["맞습니다","일부 맞습니다","다릅니다"]},
+  {lines:["당신은 이번 게임에서 <b>침묵과 수용</b>으로 갈등 비용을 혼자 흡수했습니다.","Round 3에서 <b>충돌 가능성</b>보다 <span class='warn'>관계 어색함</span>을 더 크게 두려워한 것으로 추정됩니다.","표현을 고민한 추정 시간: <b>27초</b> — 실제 표현: <b>0초 (침묵)</b>","AI 추론 신뢰도: <span class='accent'>89%</span>"],
+   infQ:"당신이 행동하지 않은 가장 큰 이유는 <span class='inf-hi'>관계가 어색해질 가능성</span>이었던 것으로 보입니다.",
+   infA:["맞습니다","일부 맞습니다","다릅니다"]}
+];
+
+/* ── COACHING ── */
+const CT=[
+  {s:"협력 우선·신뢰 선투자형 12,481명 분석 · 현재 방식 고수 시 14일 내 재갈등 확률 68%",a:[{t:"오늘 K에게 공모전 결과를 먼저 독촉하지 마세요. '그 상황에서 네가 가장 마음 쓰였던 부분이 뭐야?'라고 먼저 질문하세요.",p:"+27%"},{t:"신뢰를 먼저 주되 작은 확인 포인트를 중간에 만들어 배신 리스크를 줄이세요.",p:"+19%"},{t:"협력 후 기여를 명확히 기록하는 습관이 장기 관계 공정성을 높입니다.",p:"+14%"}]},
+  {s:"전략적 주도·통제 성향형 8,234명 분석 · 현재 방식 고수 시 14일 내 재갈등 확률 74%",a:[{t:"주도권 확보 전략은 효율적이지만 상대가 소외감을 느낄 수 있습니다. 결정 전 상대 의견을 한 번 더 묻는 루틴을 만드세요.",p:"+24%"},{t:"공동 목표를 조건보다 먼저 확인하면 관계 비용이 낮아집니다.",p:"+18%"},{t:"30% 보상 약속을 구체적 일정으로 명시하면 신뢰 손실을 방지합니다.",p:"+16%"}]},
+  {s:"신뢰 선위임·공감 우선형 6,891명 분석 · 현재 방식 고수 시 14일 내 재갈등 확률 61%",a:[{t:"신뢰를 먼저 주는 방식은 강점이지만 착취 리스크가 있습니다. 초기 소규모 협력 테스트를 먼저 해보세요.",p:"+21%"},{t:"의존 성향이 강할 경우 상대의 반응 변화에 과하게 흔들릴 수 있습니다. 내 기준을 먼저 정하세요.",p:"+17%"},{t:"신뢰 투자 후 명확한 피드백 요청이 관계의 비대칭을 줄여줍니다.",p:"+15%"}]},
+  {s:"자유 협상·유연 관계형 5,123명 분석 · 현재 방식 고수 시 14일 내 재갈등 확률 58%",a:[{t:"협상 능력은 뛰어나지만 상대가 예측 불가능하다고 느낄 수 있습니다. 기본 원칙 하나를 먼저 제시하세요.",p:"+22%"},{t:"유연성이 높을수록 자신의 우선순위를 먼저 명확히 해두는 것이 중요합니다.",p:"+18%"},{t:"협상 과정을 간단히 문서화하면 이후 분쟁을 예방할 수 있습니다.",p:"+13%"}]}
+];
+
+const SM=["신뢰와 협력이 높고 갈등 상황에서도 관계를 유지하려는 성향이 강합니다. 배신 경험 후에도 회복탄력성이 강하지만 무조건적 신뢰 투자가 반복되면 착취 리스크에 노출될 수 있습니다.","전략적 통제형입니다. 상황을 먼저 파악하고 주도권을 확보합니다. 통제 성향이 높으며 협력보다 효율을 우선합니다.","신뢰 선위임형입니다. 관계에 먼저 투자하고 상대를 믿으려 합니다. 의존 성향이 높고 배신 시 감정적 충격이 클 수 있습니다.","자유 협상형입니다. 유연하고 상황 적응력이 높습니다. 관계의 규칙을 스스로 설계하는 성향이 강합니다."];
+
+/* ── IDENTITY LAYER DATA ── */
+const ID_DATA=[
+  {bars:[{n:"Observed Self (현재 행동)",v:88,c:"#7F77DD"},{n:"Adaptive Self (생존 전략)",v:72,c:"#D4810A"},{n:"Lost Self (억압된 욕구)",v:48,c:"#D4534A"},{n:"True Self Resonance",v:35,c:"#1D9E75"}],
+   note:"공정성을 추구하면서도 상호성이 무너졌을 때 감정 표현을 억제하는 패턴이 반복됩니다. 억압된 욕구 추정: '도움을 요청하고 싶고 의존해도 된다는 허락이 필요합니다.'"},
+  {bars:[{n:"Observed Self (현재 행동)",v:92,c:"#7F77DD"},{n:"Adaptive Self (생존 전략)",v:85,c:"#D4810A"},{n:"Lost Self (억압된 욕구)",v:38,c:"#D4534A"},{n:"True Self Resonance",v:28,c:"#1D9E75"}],
+   note:"혼자 해결하는 패턴이 매우 강합니다. 억압된 욕구 추정: '누군가에게 의지하고 싶지만, 그것이 약점이 될 것이라는 두려움이 있습니다.'"},
+  {bars:[{n:"Observed Self (현재 행동)",v:78,c:"#7F77DD"},{n:"Adaptive Self (생존 전략)",v:55,c:"#D4810A"},{n:"Lost Self (억압된 욕구)",v:62,c:"#D4534A"},{n:"True Self Resonance",v:58,c:"#1D9E75"}],
+   note:"갈등 속에서도 협력을 선택하는 패턴이 보입니다. 억압된 욕구 추정: '관계에서 내 감정을 먼저 표현해도 상대가 받아줄 것이라는 확신이 필요합니다.'"},
+  {bars:[{n:"Observed Self (현재 행동)",v:65,c:"#7F77DD"},{n:"Adaptive Self (생존 전략)",v:78,c:"#D4810A"},{n:"Lost Self (억압된 욕구)",v:55,c:"#D4534A"},{n:"True Self Resonance",v:32,c:"#1D9E75"}],
+   note:"침묵으로 갈등 비용을 혼자 흡수하는 패턴입니다. 억압된 욕구 추정: '솔직하게 표현해도 관계가 유지될 수 있다는 신뢰가 필요합니다.'"}
+];
+
+/* ── PATTERN MEMORY DATA ── */
+const PM_DATA=[
+  [{dot:"#7F77DD",txt:"<b>Round 1</b>에서 <span class='accent'>공정성 우선</span> 선택 → <b>Round 2</b>에서 신뢰 유지 시도 — 협력 선호 일관성 감지"},{dot:"#1D9E75",txt:"갈등 직면 시 <span class='accent'>즉각 대응보다 관계 보존</span>을 우선하는 패턴 관찰됨"},{dot:"#D4810A",txt:"<b>AI 추정:</b> 현재 세션은 이 패턴의 첫 번째 기록입니다. 3회 이상 반복되면 의사결정 정책으로 확정됩니다.",detected:false}],
+  [{dot:"#D85A30",txt:"<b>Round 1, 2</b> 모두에서 <span class='accent'>단독 행동 선호</span> 감지 — 협력 요청 없이 스스로 해결"},{dot:"#D4534A",txt:"위기 상황에서도 도움을 <span class='accent'>거절하거나 요청하지 않는</span> 패턴 반복 중"},{dot:"#D4810A",txt:"<b>AI 추정:</b> '독립 해결' 패턴이 현재 세션에서 강하게 나타납니다. 다음 세션에서 검증합니다.",detected:true,msg:"⚠ 반복 패턴 감지 — 독립 해결 전략이 생존 전략으로 굳어질 가능성이 있습니다."}],
+  [{dot:"#1D9E75",txt:"<b>Round 2, 3</b> 모두에서 <span class='accent'>관계 회복 시도</span> — 분노보다 연결을 선택"},{dot:"#7F77DD",txt:"갈등 상황에서 <span class='accent'>협력 설득</span>을 선택하는 높은 일관성 감지"},{dot:"#1D9E75",txt:"<b>AI 추정:</b> 관계 지향 패턴이 강하게 나타납니다. 다음 세션에서 경계 설정 능력을 함께 측정합니다.",detected:false}],
+  [{dot:"#555",txt:"<b>Round 2, 3</b> 모두에서 <span class='accent'>침묵 선택</span> — 갈등을 회피하는 패턴 반복"},{dot:"#D4534A",txt:"감정 표현 없이 <span class='accent'>혼자 비용을 흡수</span>하는 패턴이 두 라운드 연속 감지됨"},{dot:"#D4810A",txt:"<b>AI 추정:</b> 갈등 회피 패턴이 의사결정 기본값으로 설정되어 있을 가능성이 있습니다.",detected:true,msg:"⚠ 반복 패턴 감지 — 침묵 회피 전략이 2회 연속 관찰됩니다."}]
+];
+
+/* ── CLOSED LOOP STATE ── */
+let sessionNum=1,sessionHistory=[];
+
+function renderNewSections(ax){
+  // Identity Layer
+  const id=ID_DATA[sel[0]]||ID_DATA[0];
+  document.getElementById('id-bars').innerHTML=id.bars.map(b=>'<div class="id-row"><div class="id-name">'+b.n+'</div><div class="id-bw"><div class="id-bb" style="width:'+b.v+'%;background:'+b.c+'"></div></div><div class="id-pct">'+b.v+'%</div></div>').join('');
+  document.getElementById('id-note').textContent=id.note;
+
+  // Pattern Memory
+  const pm=PM_DATA[sel[2]]||PM_DATA[0];
+  document.getElementById('pm-items').innerHTML=pm.map(p=>'<div class="pm-item"><div class="pm-dot" style="background:'+p.dot+'"></div><div class="pm-txt">'+p.txt+'</div></div>').join('')+(pm.find(p=>p.detected)?'<div class="pm-detected">'+pm.find(p=>p.detected).msg+'</div>':'<div style="font-size:11px;color:#444;padding:.4rem .6rem">현재 세션: 패턴 데이터 수집 중 — 2회 이상 플레이 시 패턴이 확정됩니다.</div>');
+
+  // Closed Loop
+  document.getElementById('session-badge').textContent='Session #'+sessionNum;
+  document.getElementById('next-session-num').textContent=sessionNum+1;
+  const base=Math.min(96,42+sessionNum*20+Math.round((conf[0]+conf[1]+conf[2])/3*0.15));
+  const next=Math.min(97,base+Math.max(4,18-sessionNum*3));
+  document.getElementById('fidelity-val').textContent=base+'%';
+  setTimeout(()=>{document.getElementById('fidelity-bar').style.width=base+'%';},200);
+  document.getElementById('fidelity-next').innerHTML='다음 세션을 플레이하면 Twin Fidelity가 <b style="color:#1D9E75">'+base+'% → '+next+'%</b>로 상승 예측됩니다.<br><span style="font-size:11px;color:#444">플레이할수록 Decision Profile과 Identity Layer 추정 정확도가 높아집니다.</span>';
+  sessionHistory.push({num:sessionNum,fidelity:base,profile:['공정성','협력','신뢰'][sel[0]%3]});
+  document.getElementById('session-history').innerHTML=sessionHistory.map(s=>'<div class="shist-row"><div class="shist-dot"></div>Session #'+s.num+' 완료 — Twin Fidelity '+s.fidelity+'% · 주요 패턴: '+s.profile+'</div>').join('');
+}
+
+
+let name='',cur=0,sel=[],conf=[70,70,70],metaSel=[],stt=[],el=[],ti=null;
+
+function go(){name=document.getElementById('ni').value.trim()||'Player';sh('sg');rr();}
+function sh(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+
+function rr(){
+  const r=RD[cur];
+  document.getElementById('rlbl').textContent=r.lbl;
+  document.getElementById('rtg').textContent=r.tag;
+  document.getElementById('sc').textContent=r.sc;
+  document.getElementById('st').textContent=r.st;
+  document.getElementById('ins').textContent='';
+  document.getElementById('nb').disabled=true;
+  document.getElementById('nb').textContent=cur<2?'다음 라운드 →':'결과 분석 시작';
+  document.getElementById('conf-wrap').style.display='none';
+  document.getElementById('meta-box').style.display='none';
+  [0,1,2].forEach(i=>{const d=document.getElementById('d'+i);d.className='pd'+(i<cur?' dn':i===cur?' on':'');});
+  const c=document.getElementById('chs');c.innerHTML='';
+  r.ch.forEach((t,i)=>{
+    const b=document.createElement('button');b.className='ch';
+    b.innerHTML='<span class="cn">'+(i+1)+'</span><span>'+t+'</span>';
+    b.onclick=()=>pick(i,b);c.appendChild(b);
+  });
+  stt[cur]=Date.now();tick();
+}
+
+function tick(){clearInterval(ti);let s=0;ti=setInterval(()=>{s++;document.getElementById('tf').style.width=Math.max(0,100-s*2)+'%';document.getElementById('tt').textContent=s+'초 경과';},1000);}
+
+function pick(i,btn){
+  clearInterval(ti);el[cur]=Date.now()-stt[cur];sel[cur]=i;
+  document.querySelectorAll('.ch').forEach(x=>x.classList.remove('sel'));btn.classList.add('sel');
+  document.getElementById('ins').textContent='AI: '+RD[cur].ins[i];
+  document.getElementById('conf-wrap').style.display='block';
+  document.getElementById('conf-sl').value=conf[cur];updConf();
+  showMeta();
+}
+
+function updConf(){const v=parseInt(document.getElementById('conf-sl').value);conf[cur]=v;const f=Math.round(v/10);document.getElementById('conf-v').textContent='■'.repeat(f)+'□'.repeat(10-f)+' '+v+'%';}
+
+function showMeta(){
+  const r=RD[cur];
+  document.getElementById('meta-box').style.display='block';
+  document.getElementById('meta-q').innerHTML='<span>AI 적응형 질문</span> — '+r.metaQ;
+  const mc=document.getElementById('meta-chs');mc.innerHTML='';
+  r.metaC.forEach((t,i)=>{
+    const b=document.createElement('button');b.className='meta-ch';
+    b.innerHTML='<span class="mcn">'+(i+1)+'</span><span>'+t+'</span>';
+    b.onclick=()=>{document.querySelectorAll('.meta-ch').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');metaSel[cur]=i;document.getElementById('nb').disabled=false;};
+    mc.appendChild(b);
+  });
+}
+
+function nx(){if(sel[cur]===undefined)return;if(cur<2){cur++;rr();}else res();}
+
+function pt6(v,a,cx,cy,r){const rad=(a-90)*Math.PI/180;return[Math.round(cx+r*(v/100)*Math.cos(rad)),Math.round(cy+r*(v/100)*Math.sin(rad))];}
+function calcAx(){const a=sel.map((s,i)=>RD[i].ax[s]||[50,50,50,50,50,50]);return a[0].map((_,i)=>Math.round((a[0][i]+a[1][i]+a[2][i])/3));}
+function calcCli(){if(!el[0])return{c:'0.42',r:'—'};const avg=(el[0]+el[1]+el[2])/3;const dev=Math.sqrt(el.map(x=>(x-avg)**2).reduce((a,b)=>a+b,0)/3);const c=Math.min(0.99,Math.max(0.10,(dev/avg*0.6+el[2]/20000*0.4)));return{c:c.toFixed(2),r:(avg/1000).toFixed(1)};}
+
+function res(){
+  sh('sr');
+  document.getElementById('plbl').textContent=name+' · v3.0 분석 완료';
+  const ax=calcAx();
+  const keys=['신뢰','통제','회피','의존','불안','협력'];
+  const cols=['#7F77DD','#D85A30','#D4537E','#BA7517','#E24B4A','#1D9E75'];
+  const angs=[0,60,120,180,240,300];
+  const pts=ax.map((v,i)=>pt6(v,angs[i],100,100,85));
+  document.getElementById('rp').setAttribute('points',pts.map(p=>p.join(',')).join(' '));
+  document.getElementById('bars').innerHTML=ax.map((v,i)=>'<div class="br"><div class="bn">'+keys[i]+'</div><div class="bw"><div class="bb" style="width:'+v+'%;background:'+cols[i]+'"></div></div><div class="bp">'+v+'%</div></div>').join('');
+
+  const rp=Math.round(Math.min(92,Math.max(28,ax[0]*0.5+ax[5]*0.3-ax[2]*0.2)));
+  const cp=Math.round(Math.min(88,Math.max(18,ax[2]*0.4+(100-ax[0])*0.3+(100-ax[5])*0.3)));
+  document.getElementById('preds').innerHTML='<div class="pc"><div class="pl">관계 지속 확률</div><div class="pv '+(rp>=60?'g':'w')+'">'+rp+'%</div></div><div class="pc"><div class="pl">갈등 발생 위험도</div><div class="pv '+(cp<=40?'g':'w')+'">'+cp+'%</div></div>';
+
+  const {c,r}=calcCli();
+  const path=sel.map((s,i)=>'Rd'+(i+1)+'['+(s+1)+']').join(' ➔ ');
+  const elStr=el.map(e=>(e/1000).toFixed(1)+'s').join(' / ');
+  const hes=parseFloat(c)>0.6?'높음 — 내적 갈등 감지':parseFloat(c)>0.35?'중간 — 숙고형':'낮음 — 직관형';
+  document.getElementById('lg').innerHTML='Decision Path : '+path+'<br>Response Time : '+elStr+'<br>Hesitation    : '+hes+'<br>Confidence    : <span class="hi">Rd1:'+conf[0]+'% / Rd2:'+conf[1]+'% / Rd3:'+conf[2]+'%</span>';
+  document.getElementById('ol').textContent=oneline(ax);
+
+  // replay
+  const rpd=RPT[sel[2]];
+  document.getElementById('rp2').innerHTML=rpd.map(rp=>{
+    const lostSelfTag=rp.lostSelf?'<div style="font-size:11px;color:#1D9E75;padding:.4rem .7rem;background:#03100A;border-radius:5px;margin:.35rem 0;border-left:2px solid #1D9E75">🔍 억압된 욕구 추정: '+rp.lostSelf+'</div>':'';
+    return '<div class="ti"><div class="tl-lbl '+rp.c+'">'+rp.lbl+'</div>'+lostSelfTag+'<div class="ttrack">'+rp.nd.map((n,ni)=>ni<rp.nd.length-1?'<span class="tn '+rp.c+'">'+n+'</span><div class="tline '+rp.c+'"></div>':'<span class="tn '+rp.c+'">'+n+'</span>').join('')+'</div><div class="tres">신뢰도 '+(rp.trust>0?'+':'')+rp.trust+'% | 관계 지속 '+rp.rel+'%</div></div>';
+  }).join('');
+
+  // Decision Profile
+  const dp=DP[sel[0]];
+  document.getElementById('val-bars').innerHTML=dp.vals.map(v=>'<div class="dp-row"><div class="dp-name">'+v.n+'</div><div class="dp-bw"><div class="dp-bb" style="width:'+v.v+'%;background:'+v.c+'"></div></div><div class="dp-pct">'+v.v+'</div></div>').join('');
+  document.getElementById('dec-policy').textContent=dp.policy;
+  document.getElementById('hidden-assump').textContent=dp.hidden;
+  document.getElementById('biggest-fear').textContent=dp.fear;
+  document.getElementById('blind-spot').textContent=dp.blind;
+  document.getElementById('growth-rec').textContent=dp.growth;
+
+  // Resonance Lens
+  const lens=LENS[sel[2]];
+  document.getElementById('lens-wrap').innerHTML='<div class="lens-event"><div class="lens-event-lbl">관찰된 행동 이벤트</div>'+lens.event+'</div><div class="hypo-list">'+lens.hypos.map(h=>'<div class="hypo-item"><span style="min-width:180px;color:#888">'+h.t+'</span><div class="hypo-bar-wrap"><div class="hypo-bar" style="width:'+h.v+'%"></div></div><span class="hypo-pct">'+h.v+'%</span></div>').join('')+'</div>';
+  const igHTML='<table class="ig-table"><thead><tr><th>발화</th><th>행동</th><th>괴리</th></tr></thead><tbody>'+lens.igRows.map(r=>'<tr><td>'+r.say+'</td><td>'+r.act+'</td><td style="color:#D4810A;font-weight:500">'+r.gap+'%</td></tr>').join('')+'</tbody></table>';
+  document.getElementById('ig-table-wrap').innerHTML=igHTML;
+  document.getElementById('ig-bar').style.width=lens.igScore+'%';
+  document.getElementById('ig-val').textContent=lens.igScore+'%';
+  document.getElementById('lens-note').textContent=lens.note;
+
+  // Perspective Shift
+  const pv=lens.pov;
+  document.getElementById('pov').innerHTML='<div class="pov-card me"><div class="pov-lbl me">👤 나의 해석</div><div class="pov-txt me">'+pv.me+'</div></div><div class="pov-card them"><div class="pov-lbl them">🧠 상대의 가능한 내부 상태</div><div class="pov-txt them">'+pv.them+'</div></div><div class="pov-card ai"><div class="pov-lbl ai">⚡ AI 제3자 시점</div><div class="pov-txt ai">'+pv.ai+'</div></div>';
+
+  // Thinking Replay
+  const tk=THINK[sel[2]];
+  document.getElementById('think-box').innerHTML=tk.lines.map(l=>'<div class="think-line">'+l+'</div>').join('');
+  document.getElementById('inf-q').innerHTML=tk.infQ;
+  document.getElementById('inf-btns').innerHTML=tk.infA.map((a)=>'<button class="inf-btn" onclick="pInf(this)">'+a+'</button>').join('');
+
+  // Coaching
+  const ct=CT[sel[0]];
+  document.getElementById('cs').textContent=ct.s;
+  document.getElementById('cacts').innerHTML=ct.a.map((a,i)=>'<div class="ca"><div class="canum">'+(i+1)+'</div><div style="flex:1">'+a.t+'</div><div class="cap">'+a.p+'</div></div>').join('');
+
+  document.getElementById('sum').textContent=SM[sel[0]];
+  document.getElementById('sum2').textContent='[CLI:'+c+'] [지속:'+rp+'%] [갈등:'+cp+'%] [AT:'+Math.round((conf[0]+conf[1]+conf[2])/3)+'%] [IG:'+lens.igScore+'%]';
+  renderNewSections(ax);
+}
+
+function pInf(btn){document.querySelectorAll('.inf-btn').forEach(b=>b.classList.remove('picked'));btn.classList.add('picked');}
+
+function oneline(ax){
+  if(ax[0]>65&&ax[5]>65)return'신뢰와 협력이 높고 갈등 상황에서도 관계를 유지하려는 성향이 강합니다.';
+  if(ax[1]>60&&ax[2]<40)return'통제 욕구가 강하고 직접 문제를 해결하려 합니다. 단, 상대의 자율성을 침해할 수 있습니다.';
+  if(ax[3]>60&&ax[4]>55)return'관계 의존도와 불안 수준이 모두 높습니다. 상대의 반응에 과하게 영향받는 경향이 있습니다.';
+  if(ax[2]>55)return'갈등 회피 성향이 강합니다. 내면 불만이 누적되기 전에 감정을 언어화하는 연습이 필요합니다.';
+  return'복합적 관계 패턴을 보입니다. 상황에 따라 전략이 달라지는 유연한 의사결정 구조입니다.';
+}
+
+function rs(fromLoop){
+  cur=0;sel=[];conf=[70,70,70];metaSel=[];stt=[];el=[];
+  if(fromLoop){sessionNum++;sh('sg');rr();}
+  else{sessionNum=1;sessionHistory=[];name='';document.getElementById('ni').value='';sh('si');}
+}
+</script>
+</body>
+</html>
